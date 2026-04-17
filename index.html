@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init("fBr3U4xpS_U3gH4og");</script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -837,12 +839,25 @@ document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 
-document.getElementById('sendEmailBtn').addEventListener('click', () => {
-  const subject = encodeURIComponent(buildSubject());
-  const body = encodeURIComponent(buildBody());
-  window.location.href = 'mailto:expenses@sllservicesllc.com?subject=' + subject + '&body=' + body;
-  closeModal();
-  showToast('✓ Email app opened — ready to send!', 'success');
+document.getElementById('sendEmailBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('sendEmailBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  const templateParams = {
+    from_name: document.getElementById('employeeName').value.trim(),
+    subject: buildSubject(),
+    message: buildBody()
+  };
+  try {
+    await emailjs.send('service_e1lex4v', 'template_plz7ak', templateParams);
+    closeModal();
+    showToast('✓ Expense submitted successfully!', 'success');
+  } catch (err) {
+    showToast('Failed to send — please try again', 'error-toast');
+    console.error('EmailJS error:', err);
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Send Expense &nbsp;&rarr;';
 });
 
 function showToast(msg, type='') {
