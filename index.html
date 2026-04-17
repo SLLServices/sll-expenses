@@ -377,7 +377,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
   emailjs.send('service_e1lex4v', 'template_plzb7ak', templateParams)
     .then(function() {
       showToast('Expense submitted successfully!', 'success');
-      setTimeout(resetForm, 1500);
+      setTimeout(function() { window.location.reload(); }, 1500);
       btn.disabled = false;
       btn.textContent = 'Submit Expense';
     })
