@@ -823,49 +823,52 @@ function buildSubject() {
   return '[Expense] ' + name + ' | WO#' + jobCode + ' | ' + purpose + ' | ' + total + ' | ' + vendor;
 }
 
-document.getElementById('submitBtn').addEventListener('click', () => {
+document.getElementById('submitBtn').addEventListener('click', async () => {
   const name = document.getElementById('employeeName').value.trim();
   const jobCode = document.getElementById('jobCode').value.trim();
   const purpose = document.getElementById('purpose').value;
   if (!name) { showToast('Employee name is required', 'error-toast'); document.getElementById('employeeName').focus(); return; }
   if (!jobCode) { showToast('WO# / Project is required', 'error-toast'); document.getElementById('jobCode').focus(); return; }
   if (!purpose) { showToast('Purpose of Expense is required', 'error-toast'); document.getElementById('purpose').focus(); return; }
-  document.getElementById('emailPreview').textContent = buildBody();
-  document.getElementById('modalOverlay').classList.add('open');
-});
 
-document.getElementById('modalClose').addEventListener('click', closeModal);
-document.getElementById('cancelBtn').addEventListener('click', closeModal);
-document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
-
-document.getElementById('sendEmailBtn').addEventListener('click', async () => {
-  const btn = document.getElementById('sendEmailBtn');
+  const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = 'Sending...';
+
   const templateParams = {
-    from_name: document.getElementById('employeeName').value.trim(),
+    from_name: name,
     subject: buildSubject(),
     message: buildBody()
   };
+
   try {
     await emailjs.send('service_e1lex4v', 'template_plz7ak', templateParams);
-    closeModal();
     showToast('✓ Expense submitted successfully!', 'success');
+    setTimeout(() => {
+      document.getElementById('employeeName').value = '';
+      document.getElementById('jobCode').value = '';
+      document.getElementById('purpose').value = '';
+      document.getElementById('notes').value = '';
+      document.getElementById('vendor').value = '';
+      document.getElementById('purchaseDate').value = '';
+      document.getElementById('totalAmount').value = '';
+      document.getElementById('category').value = '';
+      document.getElementById('uploadPrompt').style.display = 'block';
+      document.getElementById('previewContainer').classList.remove('visible');
+      document.getElementById('uploadZone').classList.remove('has-file', 'analyzing');
+      document.getElementById('analysisPlaceholder').innerHTML = 'Upload a receipt above — details will populate automatically.';
+      document.getElementById('analysisPlaceholder').style.display = 'flex';
+      document.getElementById('analysisGrid').style.display = 'none';
+    }, 1500);
   } catch (err) {
     showToast('Failed to send — please try again', 'error-toast');
     console.error('EmailJS error:', err);
   }
+
   btn.disabled = false;
-  btn.innerHTML = 'Send Expense &nbsp;&rarr;';
+  btn.innerHTML = '&#9658; Submit Expense';
 });
 
 function showToast(msg, type='') {
   toast.textContent = msg;
-  toast.className = 'toast ' + type;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3500);
-}
-</script>
-</body>
-</html>
+  toast.className
