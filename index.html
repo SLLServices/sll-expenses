@@ -374,7 +374,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
     message: buildBody()
   };
 
-  emailjs.send('service_e1lex4v', 'template_plz7ak', templateParams)
+  emailjs.send('service_e1lex4v', 'template_plzb7ak', templateParams)
     .then(function() {
       showToast('Expense submitted successfully!', 'success');
       setTimeout(resetForm, 1500);
