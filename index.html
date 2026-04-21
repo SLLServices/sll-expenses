@@ -381,7 +381,21 @@ document.getElementById('submitBtn').addEventListener('click', function() {
   emailjs.send('service_e1lex4v', 'template_plzb7ak', templateParams)
     .then(function() {
       showToast('Expense submitted successfully!', 'success');
-      setTimeout(function() { window.location.reload(); }, 1500);
+      fetch('/.netlify/functions/airtable', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    employeeName: document.getElementById('employeeName').value.trim(),
+    jobCode: document.getElementById('jobCode').value.trim(),
+    purpose: document.getElementById('purpose').value,
+    vendor: document.getElementById('vendor').value.trim(),
+    date: document.getElementById('purchaseDate').value,
+    amount: document.getElementById('totalAmount').value.trim(),
+    category: document.getElementById('category').value,
+    notes: document.getElementById('notes').value.trim()
+  })
+}).catch(function(err) { console.error('Airtable error:', err); });
+setTimeout(function() { window.location.reload(); }, 1500);
       btn.disabled = false;
       btn.textContent = 'Submit Expense';
     })
