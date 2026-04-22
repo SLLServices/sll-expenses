@@ -247,7 +247,7 @@ function handleFile(file) {
 
 function analyzeReceipt() {
   var mediaType = uploadedFile.type || 'image/jpeg';
-  fetch('/.netlify/functions/analyze', {
+  fetch('/functions/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ imageData: base64Data, mediaType: mediaType })
@@ -379,7 +379,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
   emailjs.send('service_e1lex4v', 'template_plzb7ak', templateParams)
     .then(function() {
       showToast('Expense submitted successfully!', 'success');
-      fetch('/.netlify/functions/airtable', {
+      fetch('/functions/airtable', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
