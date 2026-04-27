@@ -247,7 +247,7 @@ function handleFile(file) {
 
 function analyzeReceipt() {
   var mediaType = uploadedFile.type || 'image/jpeg';
-  fetch('/functions/analyze', {
+  fetch('/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ imageData: base64Data, mediaType: mediaType })
