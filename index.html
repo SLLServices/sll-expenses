@@ -379,7 +379,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
   emailjs.send('service_e1lex4v', 'template_plzb7ak', templateParams)
     .then(function() {
       showToast('Expense submitted successfully!', 'success');
-      fetch('/functions/airtable', {
+      fetch('/airtable', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
