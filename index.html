@@ -374,7 +374,7 @@ var templateParams = {
   from_name: name,
   subject: buildSubject(),
   message: buildBody(),
-  receipt_image: uploadedFile
+  receipt_image: 'data:' + (uploadedFile ? uploadedFile.type : 'image/jpeg') + ';base64,' + base64Data
 };
 
   emailjs.send('service_e1lex4v', 'template_plzb7ak', templateParams)
