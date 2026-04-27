@@ -370,11 +370,12 @@ document.getElementById('submitBtn').addEventListener('click', function() {
   btn.disabled = true;
   btn.textContent = 'Sending...';
 
-  var templateParams = {
-    from_name: name,
-    subject: buildSubject(),
-    message: buildBody()
-  };
+var templateParams = {
+  from_name: name,
+  subject: buildSubject(),
+  message: buildBody(),
+  receipt_image: uploadedFile
+};
 
   emailjs.send('service_e1lex4v', 'template_plzb7ak', templateParams)
     .then(function() {
