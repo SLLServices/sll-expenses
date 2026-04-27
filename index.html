@@ -229,18 +229,7 @@ function handleFile(file) {
   var reader = new FileReader();
   reader.onload = function(e) {
     base64Data = e.target.result.split(',')[1];
-    previewImg.src = e.target.result;
-    document.getElementById('previewName').textContent = file.name;
-    uploadPrompt.style.display = 'none';
-    previewContainer.classList.add('visible');
-    uploadZone.classList.remove('has-file');
-    uploadZone.classList.add('analyzing');
-    statusLine.className = 'analyzing-status';
-    statusLine.innerHTML = '<div class="spinner"></div><span>Analyzing receipt...</span>';
-    analysisPlaceholder.innerHTML = '<div class="spinner"></div><span>Reading receipt with AI...</span>';
-    analysisPlaceholder.style.display = 'flex';
-    analysisGrid.style.display = 'none';
-    analyzeReceipt();
+    
   };
   reader.readAsDataURL(file);
 }
