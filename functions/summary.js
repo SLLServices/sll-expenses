@@ -1,6 +1,3 @@
-// SLL Services - Expense Summary Function
-// Deploy as functions/summary.js in Cloudflare Pages
-
 const AIRTABLE_BASE_ID = 'appdAkhQz46xwsS8Y';
 const AIRTABLE_TABLE_ID = 'tblHtd7s9wDTRcfxf';
 const RECIPIENT_EMAIL = 'jflorentine@sllservicesllc.com';
@@ -12,23 +9,48 @@ const EMAILJS_PUBLIC_KEY = 'fBr3U4xpS_U3gH4og';
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const type = url.searchParams.get('type') || 'weekly';
+  const debug = url.searchParams.get('debug') === 'true';
 
   try {
     const { startDate, endDate, periodLabel } = getDateRange(type);
-    const records = await fetchAirtableRecords(context.env.AIRTABLE_API_KEY, startDate, endDate);
+    const apiKey = context.env.AIRTABLE_API_KEY;
+
+    // Fetch ALL records with no filter for now
+    const fetchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?maxRecords=1000`;
+    const response = await fetch(fetchUrl, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (debug) {
+      return new Response(JSON.stringify({
+        apiKeyPresent: !!apiKey,
+        airtableStatus: response.status,
+        recordCount: (data.records || []).length,
+        firstRecord: data.records?.[0]?.fields || null,
+        error: data.error || null
+      }, null, 2), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const records = (data.records || []).map(r => r.fields);
 
     if (records.length === 0) {
-  const hasKey = !!context.env.AIRTABLE_API_KEY;
-  return new Response(`No records found for ${periodLabel}. API key present: ${hasKey}`, { status: 200 });
-}
+      return new Response(`No records found. API key present: ${!!apiKey}. Airtable status: ${response.status}`, { status: 200 });
+    }
 
     const summary = buildSummary(records);
     const html = buildEmailHTML(summary, periodLabel, type);
     await sendEmail(html, type, periodLabel);
 
-    return new Response(`Summary email sent successfully for ${periodLabel}`, { status: 200 });
+    return new Response(`Summary email sent! ${records.length} records found for ${periodLabel}`, { status: 200 });
   } catch (err) {
-    return new Response(`Error: ${err.message}`, { status: 500 });
+    return new Response(`Error: ${err.message}\n${err.stack}`, { status: 500 });
   }
 }
 
@@ -65,21 +87,6 @@ function formatDate(date) {
 
 function formatDateDisplay(date) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-async function fetchAirtableRecords(apiKey, startDate, endDate) {
-  const formula = encodeURIComponent(
-    `AND({Date} >= '${startDate}', {Date} <= '${endDate}')`
-  );
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?maxRecords=1000`;
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    }
-  });
-  const data = await response.json();
-  return (data.records || []).map(r => r.fields);
 }
 
 function buildSummary(records) {
