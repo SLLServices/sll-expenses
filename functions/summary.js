@@ -68,7 +68,7 @@ function formatDateDisplay(date) {
 
 async function fetchAirtableRecords(apiKey, startDate, endDate) {
   const formula = encodeURIComponent(
-    `AND(IS_AFTER({Date}, '${startDate}'), IS_BEFORE({Date}, '${endDate}'))`
+    `AND({Date} >= '${startDate}', {Date} <= '${endDate}')`
   );
   const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?filterByFormula=${formula}&maxRecords=1000`;
   const response = await fetch(url, {
