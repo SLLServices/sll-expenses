@@ -18,8 +18,9 @@ export async function onRequest(context) {
     const records = await fetchAirtableRecords(context.env.AIRTABLE_API_KEY, startDate, endDate);
 
     if (records.length === 0) {
-      return new Response(`No records found for ${periodLabel}`, { status: 200 });
-    }
+  const hasKey = !!context.env.AIRTABLE_API_KEY;
+  return new Response(`No records found for ${periodLabel}. API key present: ${hasKey}`, { status: 200 });
+}
 
     const summary = buildSummary(records);
     const html = buildEmailHTML(summary, periodLabel, type);
