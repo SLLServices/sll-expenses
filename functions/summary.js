@@ -47,7 +47,8 @@ export async function onRequest(context) {
     const html = buildEmailHTML(summary, periodLabel, type);
     await sendEmail(html, type, periodLabel);
 
-    return new Response(`Summary email sent! ${records.length} records found for ${periodLabel}`, { status: 200 });
+    const emailResult = await sendEmail(html, type, periodLabel);
+return new Response(`Records: ${records.length}. Email status: ${emailResult.status}. Result: ${emailResult.result}`, { status: 200 });
   } catch (err) {
     return new Response(`Error: ${err.message}\n${err.stack}`, { status: 500 });
   }
@@ -226,7 +227,7 @@ function buildEmailHTML(summary, periodLabel, type) {
 
 async function sendEmail(html, type, periodLabel) {
   const reportType = type === 'weekly' ? 'Weekly' : 'Monthly';
-  await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+  const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -240,4 +241,6 @@ async function sendEmail(html, type, periodLabel) {
       }
     })
   });
+  const result = await response.text();
+  return { status: response.status, result };
 }
