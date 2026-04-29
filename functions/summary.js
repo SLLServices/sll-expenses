@@ -3,7 +3,7 @@ const AIRTABLE_TABLE_ID = 'tblHtd7s9wDTRcfxf';
 const RECIPIENT_EMAIL = 'jflorentine@sllservicesllc.com';
 const FLAG_THRESHOLD = 1500;
 const EMAILJS_SERVICE_ID = 'service_e1lex4v';
-const EMAILJS_TEMPLATE_ID = 'template_plzb7ak';
+const EMAILJS_TEMPLATE_ID = 'template_gf34sm8';
 const EMAILJS_PUBLIC_KEY = 'fBr3U4xpS_U3gH4og';
 
 export async function onRequest(context) {
