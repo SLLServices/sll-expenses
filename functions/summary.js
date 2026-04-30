@@ -140,7 +140,7 @@ function buildEmailHTML(summary, periodLabel, type) {
   const categoryRows = summary.byCategory.map(([cat, amt], index) => {
     const pct = ((amt / summary.totalAmount) * 100).toFixed(1);
     const isTop = index === 0;
-    return `<tr style="${isTop ? 'background:#fff8f8;' : ''}">
+    return `<tr>
       <td style="padding:10px;border-bottom:1px solid #eee;${isTop ? 'font-weight:bold;color:#c0231e;' : ''}">${isTop ? '&#9650; ' : ''}${cat}</td>
       <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;${isTop ? 'font-weight:bold;' : ''}">${formatMoney(amt)}</td>
       <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${pct}%</td>
@@ -150,7 +150,7 @@ function buildEmailHTML(summary, periodLabel, type) {
   const employeeRows = summary.byEmployee.map(([emp, amt], index) => {
     const pct = ((amt / summary.totalAmount) * 100).toFixed(1);
     const isTop = index === 0;
-    return `<tr style="${isTop ? 'background:#fff8f8;' : ''}">
+    return `<tr>
       <td style="padding:10px;border-bottom:1px solid #eee;${isTop ? 'font-weight:bold;color:#c0231e;' : ''}">${isTop ? '&#9650; ' : ''}${emp}</td>
       <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;${isTop ? 'font-weight:bold;' : ''}">${formatMoney(amt)}</td>
       <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${pct}%</td>
@@ -158,112 +158,146 @@ function buildEmailHTML(summary, periodLabel, type) {
   }).join('');
 
   const flaggedSection = summary.flagged.length > 0 ? `
-    <div style="margin-top:30px;">
-      <h3 style="font-family:Arial,sans-serif;color:#c0231e;border-bottom:2px solid #c0231e;padding-bottom:8px;">
-        ⚠️ Expenses Over ${formatMoney(FLAG_THRESHOLD)}
-      </h3>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr style="background:#111;color:white;">
-          <th style="padding:10px;text-align:left;">Employee</th>
-          <th style="padding:10px;text-align:left;">Vendor</th>
-          <th style="padding:10px;text-align:left;">Category</th>
-          <th style="padding:10px;text-align:left;">Purpose</th>
-          <th style="padding:10px;text-align:left;">WO#</th>
-          <th style="padding:10px;text-align:right;">Amount</th>
-        </tr>
-        ${summary.flagged.map(f => `
-        <tr style="background:#fff5f5;">
-          <td style="padding:10px;border-bottom:1px solid #eee;">${f.employee}</td>
-          <td style="padding:10px;border-bottom:1px solid #eee;">${f.vendor}</td>
-          <td style="padding:10px;border-bottom:1px solid #eee;">${f.category}</td>
-          <td style="padding:10px;border-bottom:1px solid #eee;">${f.purpose}</td>
-          <td style="padding:10px;border-bottom:1px solid #eee;">${f.jobCode}</td>
-          <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;color:#c0231e;font-weight:bold;">${formatMoney(f.amount)}</td>
-        </tr>`).join('')}
-      </table>
-    </div>` : '';
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+      <tr><td style="padding-bottom:8px;border-bottom:2px solid #c0231e;">
+        <strong style="color:#c0231e;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Expenses Over ${formatMoney(FLAG_THRESHOLD)}</strong>
+      </td></tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;border-collapse:collapse;">
+      <tr style="background:#111;color:white;">
+        <td style="padding:10px;font-size:12px;"><strong>Employee</strong></td>
+        <td style="padding:10px;font-size:12px;"><strong>Vendor</strong></td>
+        <td style="padding:10px;font-size:12px;"><strong>Category</strong></td>
+        <td style="padding:10px;font-size:12px;"><strong>WO#</strong></td>
+        <td style="padding:10px;font-size:12px;text-align:right;"><strong>Amount</strong></td>
+      </tr>
+      ${summary.flagged.map(f => `
+      <tr style="background:#fff5f5;">
+        <td style="padding:10px;border-bottom:1px solid #eee;">${f.employee}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;">${f.vendor}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;">${f.category}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;">${f.jobCode}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;color:#c0231e;font-weight:bold;">${formatMoney(f.amount)}</td>
+      </tr>`).join('')}
+    </table>` : '';
 
   return `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#f5f5f5;">
-<div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto;background:white;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+<tr><td align="center" style="padding:20px 0;">
+<table width="800" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:800px;">
 
-  <!-- Header with Logo -->
-  <div style="background:#c0231e;padding:24px 30px;display:flex;align-items:center;border-bottom:3px solid #111;">
-    <img src="${LOGO_URL}" alt="SLL Services" style="height:14px !important;width:auto !important;max-height:14px !important;margin-right:16px;border-radius:3px;">
-    <div style="border-left:1px solid rgba(255,255,255,0.35);padding-left:16px;">
-      <h1 style="margin:0;font-size:20px;color:white;letter-spacing:1px;">${reportType.toUpperCase()} EXPENSE SUMMARY</h1>
-      <p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.75);letter-spacing:2px;">SLL SERVICES | ${periodLabel}</p>
-    </div>
-  </div>
+  <!-- Header -->
+  <tr>
+    <td style="background:#c0231e;padding:20px 24px;border-bottom:3px solid #111;">
+      <table cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding-right:14px;vertical-align:middle;">
+            <img src="${LOGO_URL}" width="36" height="24" alt="SLL" style="display:block;">
+          </td>
+          <td style="border-left:1px solid rgba(255,255,255,0.35);padding-left:14px;vertical-align:middle;">
+            <div style="color:white;font-family:Arial,sans-serif;font-size:18px;font-weight:bold;letter-spacing:1px;">${reportType.toUpperCase()} EXPENSE SUMMARY</div>
+            <div style="color:rgba(255,255,255,0.75);font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;margin-top:3px;">SLL SERVICES | ${periodLabel}</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
   <!-- Total Banner -->
-  <div style="background:#111;padding:24px;text-align:center;color:white;">
-    <p style="margin:0;font-size:11px;opacity:0.6;text-transform:uppercase;letter-spacing:3px;">Total Spent</p>
-    <p style="margin:8px 0 0;font-size:42px;font-weight:bold;">${formatMoney(summary.totalAmount)}</p>
-    <p style="margin:8px 0 0;font-size:12px;opacity:0.6;">${summary.totalCount} expense${summary.totalCount !== 1 ? 's' : ''} submitted</p>
-  </div>
+  <tr>
+    <td style="background:#111111;padding:24px;text-align:center;">
+      <div style="color:rgba(255,255,255,0.6);font-family:Arial,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:3px;">Total Spent</div>
+      <div style="color:white;font-family:Arial,sans-serif;font-size:40px;font-weight:bold;margin:8px 0;">${formatMoney(summary.totalAmount)}</div>
+      <div style="color:rgba(255,255,255,0.6);font-family:Arial,sans-serif;font-size:12px;">${summary.totalCount} expense${summary.totalCount !== 1 ? 's' : ''} submitted</div>
+    </td>
+  </tr>
 
   <!-- Quick Stats -->
-  <div style="display:flex;border-bottom:1px solid #eee;">
-    <div style="flex:1;padding:16px 20px;border-right:1px solid #eee;text-align:center;">
-      <p style="margin:0;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;">Top Category</p>
-      <p style="margin:6px 0 0;font-size:15px;font-weight:bold;color:#c0231e;">${summary.topCategory ? summary.topCategory[0] : '-'}</p>
-      <p style="margin:4px 0 0;font-size:13px;color:#444;">${summary.topCategory ? formatMoney(summary.topCategory[1]) : '-'}</p>
-    </div>
-    <div style="flex:1;padding:16px 20px;text-align:center;">
-      <p style="margin:0;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;">Top Spender</p>
-      <p style="margin:6px 0 0;font-size:15px;font-weight:bold;color:#c0231e;">${summary.topEmployee ? summary.topEmployee[0] : '-'}</p>
-      <p style="margin:4px 0 0;font-size:13px;color:#444;">${summary.topEmployee ? formatMoney(summary.topEmployee[1]) : '-'}</p>
-    </div>
-  </div>
+  <tr>
+    <td style="border-bottom:1px solid #eeeeee;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td width="50%" style="padding:16px 20px;border-right:1px solid #eeeeee;text-align:center;">
+            <div style="font-family:Arial,sans-serif;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:1px;">Top Category</div>
+            <div style="font-family:Arial,sans-serif;font-size:15px;font-weight:bold;color:#c0231e;margin-top:6px;">${summary.topCategory ? summary.topCategory[0] : '-'}</div>
+            <div style="font-family:Arial,sans-serif;font-size:13px;color:#444444;margin-top:3px;">${summary.topCategory ? formatMoney(summary.topCategory[1]) : '-'}</div>
+          </td>
+          <td width="50%" style="padding:16px 20px;text-align:center;">
+            <div style="font-family:Arial,sans-serif;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:1px;">Top Spender</div>
+            <div style="font-family:Arial,sans-serif;font-size:15px;font-weight:bold;color:#c0231e;margin-top:6px;">${summary.topEmployee ? summary.topEmployee[0] : '-'}</div>
+            <div style="font-family:Arial,sans-serif;font-size:13px;color:#444444;margin-top:3px;">${summary.topEmployee ? formatMoney(summary.topEmployee[1]) : '-'}</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
-  <div style="padding:30px;">
+  <!-- Body -->
+  <tr>
+    <td style="padding:30px;">
 
-    <!-- Category Breakdown -->
-    <h3 style="color:#111;border-bottom:2px solid #c0231e;padding-bottom:8px;font-size:14px;letter-spacing:1px;text-transform:uppercase;">Breakdown by Category</h3>
-    <table style="width:100%;border-collapse:collapse;">
-      <tr style="background:#111;color:white;">
-        <th style="padding:10px;text-align:left;font-size:12px;">Category</th>
-        <th style="padding:10px;text-align:right;font-size:12px;">Amount</th>
-        <th style="padding:10px;text-align:right;font-size:12px;">% of Total</th>
-      </tr>
-      ${categoryRows}
-      <tr style="background:#f5f5f5;font-weight:bold;">
-        <td style="padding:10px;">TOTAL</td>
-        <td style="padding:10px;text-align:right;">${formatMoney(summary.totalAmount)}</td>
-        <td style="padding:10px;text-align:right;">100%</td>
-      </tr>
-    </table>
+      <!-- Category Breakdown -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+        <tr><td style="padding-bottom:8px;border-bottom:2px solid #c0231e;">
+          <strong style="font-family:Arial,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#111111;">Breakdown by Category</strong>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;border-collapse:collapse;">
+        <tr style="background:#111111;">
+          <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;"><strong>Category</strong></td>
+          <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;text-align:right;"><strong>Amount</strong></td>
+          <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;text-align:right;"><strong>% of Total</strong></td>
+        </tr>
+        ${categoryRows}
+        <tr style="background:#f5f5f5;">
+          <td style="padding:10px;font-family:Arial,sans-serif;font-weight:bold;">TOTAL</td>
+          <td style="padding:10px;font-family:Arial,sans-serif;font-weight:bold;text-align:right;">${formatMoney(summary.totalAmount)}</td>
+          <td style="padding:10px;font-family:Arial,sans-serif;font-weight:bold;text-align:right;">100%</td>
+        </tr>
+      </table>
 
-    <!-- Employee Breakdown -->
-    <h3 style="color:#111;border-bottom:2px solid #c0231e;padding-bottom:8px;margin-top:30px;font-size:14px;letter-spacing:1px;text-transform:uppercase;">Breakdown by Employee</h3>
-    <table style="width:100%;border-collapse:collapse;">
-      <tr style="background:#111;color:white;">
-        <th style="padding:10px;text-align:left;font-size:12px;">Employee</th>
-        <th style="padding:10px;text-align:right;font-size:12px;">Amount</th>
-        <th style="padding:10px;text-align:right;font-size:12px;">% of Total</th>
-      </tr>
-      ${employeeRows}
-      <tr style="background:#f5f5f5;font-weight:bold;">
-        <td style="padding:10px;">TOTAL</td>
-        <td style="padding:10px;text-align:right;">${formatMoney(summary.totalAmount)}</td>
-        <td style="padding:10px;text-align:right;">100%</td>
-      </tr>
-    </table>
+      <!-- Employee Breakdown -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;margin-bottom:8px;">
+        <tr><td style="padding-bottom:8px;border-bottom:2px solid #c0231e;">
+          <strong style="font-family:Arial,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#111111;">Breakdown by Employee</strong>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;border-collapse:collapse;">
+        <tr style="background:#111111;">
+          <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;"><strong>Employee</strong></td>
+          <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;text-align:right;"><strong>Amount</strong></td>
+          <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;text-align:right;"><strong>% of Total</strong></td>
+        </tr>
+        ${employeeRows}
+        <tr style="background:#f5f5f5;">
+          <td style="padding:10px;font-family:Arial,sans-serif;font-weight:bold;">TOTAL</td>
+          <td style="padding:10px;font-family:Arial,sans-serif;font-weight:bold;text-align:right;">${formatMoney(summary.totalAmount)}</td>
+          <td style="padding:10px;font-family:Arial,sans-serif;font-weight:bold;text-align:right;">100%</td>
+        </tr>
+      </table>
 
-    ${flaggedSection}
+      ${flaggedSection}
 
-  </div>
+    </td>
+  </tr>
 
-  <!-- Footer with padding for signature -->
-  <div style="background:#f5f5f5;padding:20px 30px 60px;border-top:1px solid #eee;">
-    <p style="margin:0;font-size:11px;color:#888;text-align:center;">
-      Generated by SLL Services Expense Portal &nbsp;|&nbsp; ${new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}
-    </p>
-  </div>
+  <!-- Footer -->
+  <tr>
+    <td style="background:#f5f5f5;padding:20px 30px;border-top:1px solid #eeeeee;text-align:center;">
+      <div style="font-family:Arial,sans-serif;font-size:11px;color:#888888;">
+        Generated by SLL Services Expense Portal &nbsp;|&nbsp; ${new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+      </div>
+    </td>
+  </tr>
 
-</div>
+  <!-- Signature Spacer -->
+  <tr><td style="padding:40px;">&nbsp;</td></tr>
+
+</table>
+</td></tr>
+</table>
 </body>
 </html>`;
 }
