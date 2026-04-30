@@ -190,7 +190,7 @@ function buildEmailHTML(summary, periodLabel, type) {
 
   <!-- Header with Logo -->
   <div style="background:#c0231e;padding:24px 30px;display:flex;align-items:center;border-bottom:3px solid #111;">
-    <img src="${LOGO_URL}" alt="SLL Services" style="height:14px;width:auto;margin-right:16px;border-radius:3px;">
+    <img src="${LOGO_URL}" alt="SLL Services" style="height:14px !important;width:auto !important;max-height:14px !important;margin-right:16px;border-radius:3px;">
     <div style="border-left:1px solid rgba(255,255,255,0.35);padding-left:16px;">
       <h1 style="margin:0;font-size:20px;color:white;letter-spacing:1px;">${reportType.toUpperCase()} EXPENSE SUMMARY</h1>
       <p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.75);letter-spacing:2px;">SLL SERVICES | ${periodLabel}</p>
