@@ -5,6 +5,7 @@ const FLAG_THRESHOLD = 1500;
 const EMAILJS_SERVICE_ID = 'service_e1lex4v';
 const EMAILJS_TEMPLATE_ID = 'template_gf34sm8';
 const EMAILJS_PUBLIC_KEY = 'fBr3U4xpS_U3gH4og';
+const EMAILJS_PRIVATE_KEY = 'XjXbb_UaKIC6eTd3iNM06';
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
@@ -233,6 +234,7 @@ async function sendEmail(html, type, periodLabel) {
       service_id: EMAILJS_SERVICE_ID,
       template_id: EMAILJS_TEMPLATE_ID,
       user_id: EMAILJS_PUBLIC_KEY,
+      accessToken: EMAILJS_PRIVATE_KEY,
       template_params: {
         from_name: 'SLL Expense Portal',
         subject: `${reportType} Expense Summary - SLL Services - ${periodLabel}`,
