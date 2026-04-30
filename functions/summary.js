@@ -198,7 +198,7 @@ function buildEmailHTML(summary, periodLabel, type) {
           </td>
           <td style="border-left:1px solid rgba(255,255,255,0.35);padding-left:14px;vertical-align:middle;">
             <div style="color:white;font-family:Arial,sans-serif;font-size:18px;font-weight:bold;letter-spacing:1px;">${reportType.toUpperCase()} EXPENSE SUMMARY</div>
-            <div style="color:rgba(255,255,255,0.75);font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;margin-top:3px;">SLL SERVICES | ${periodLabel}</div>
+            <div style="color:white;font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;margin-top:3px;">SLL SERVICES | ${periodLabel}</div>
           </td>
         </tr>
       </table>
