@@ -194,7 +194,7 @@ function buildEmailHTML(summary, periodLabel, type) {
       <table cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding-right:14px;vertical-align:middle;">
-            <img src="${LOGO_URL}" width="36" height="24" alt="SLL" style="display:block;">
+            <img src="${LOGO_URL}" width="60" height="40" alt="SLL" style="display:block;">
           </td>
           <td style="border-left:1px solid rgba(255,255,255,0.35);padding-left:14px;vertical-align:middle;">
             <div style="color:white;font-family:Arial,sans-serif;font-size:18px;font-weight:bold;letter-spacing:1px;">${reportType.toUpperCase()} EXPENSE SUMMARY</div>
