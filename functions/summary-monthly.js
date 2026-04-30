@@ -16,10 +16,7 @@ export async function onRequest(context) {
 
     const fetchUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?maxRecords=1000`;
     const response = await fetch(fetchUrl, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }
     });
 
     const data = await response.json();
@@ -31,9 +28,7 @@ export async function onRequest(context) {
         recordCount: (data.records || []).length,
         firstRecord: data.records?.[0]?.fields || null,
         error: data.error || null
-      }, null, 2), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      }, null, 2), { headers: { 'Content-Type': 'application/json' } });
     }
 
     const records = (data.records || []).map(r => r.fields);
@@ -58,10 +53,8 @@ function getMonthDateRange() {
   const lastOfPrevMonth = new Date(firstOfThisMonth);
   lastOfPrevMonth.setDate(0);
   const firstOfPrevMonth = new Date(lastOfPrevMonth.getFullYear(), lastOfPrevMonth.getMonth(), 1);
-  const startDate = firstOfPrevMonth.toISOString().split('T')[0];
-  const endDate = lastOfPrevMonth.toISOString().split('T')[0];
   const monthName = firstOfPrevMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-  return { startDate, endDate, periodLabel: monthName };
+  return { periodLabel: monthName };
 }
 
 function buildSummary(records) {
@@ -91,17 +84,18 @@ function buildSummary(records) {
     byPurpose[purpose].count += 1;
   });
 
-  const sortedCategories = Object.entries(byCategory).sort((a, b) => b[1].total - a[1].total).slice(0, 5);
-  const sortedEmployees = Object.entries(byEmployee).sort((a, b) => b[1].total - a[1].total).slice(0, 5);
-  const sortedPurposes = Object.entries(byPurpose).sort((a, b) => b[1].total - a[1].total).slice(0, 5);
+  const sortedCategories = Object.entries(byCategory).sort((a, b) => b[1].total - a[1].total);
+  const sortedEmployees = Object.entries(byEmployee).sort((a, b) => b[1].total - a[1].total);
+  const sortedPurposes = Object.entries(byPurpose).sort((a, b) => b[1].total - a[1].total);
 
   return {
     totalAmount,
     totalCount: records.length,
-    topCategories: sortedCategories,
-    topEmployees: sortedEmployees,
-    topPurposes: sortedPurposes,
+    topCategories: sortedCategories.slice(0, 5),
+    topEmployees: sortedEmployees.slice(0, 5),
+    topPurposes: sortedPurposes.slice(0, 5),
     topCategory: sortedCategories[0] || null,
+    topPurpose: sortedPurposes[0] || null,
     topEmployee: sortedEmployees[0] || null
   };
 }
@@ -110,59 +104,34 @@ function formatMoney(amount) {
   return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function buildSection(title, rows) {
+function buildSection(sectionTitle, colLabel, items, totalAmount) {
+  const rows = items.map(([name, data], index) => {
+    const pct = ((data.total / totalAmount) * 100).toFixed(1);
+    const isTop = index === 0;
+    return `<tr>
+      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;${isTop ? 'font-weight:bold;color:#c0231e;' : ''}">${isTop ? '&#9650; ' : ''}${name}</td>
+      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:center;">${data.count}</td>
+      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;${isTop ? 'font-weight:bold;' : ''}">${formatMoney(data.total)}</td>
+      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;">${pct}%</td>
+    </tr>`;
+  }).join('');
+
   return `
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
-      <tr><td style="padding-bottom:8px;border-bottom:2px solid #c0231e;">
-        <strong style="font-family:Arial,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#111111;">${title}</strong>
-      </td></tr>
-    </table>
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;border-collapse:collapse;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
       <tr style="background:#111111;">
-        <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;"><strong>Name</strong></td>
-        <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;text-align:center;"><strong>Submissions</strong></td>
-        <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;text-align:right;"><strong>Amount</strong></td>
-        <td style="padding:10px;color:white;font-family:Arial,sans-serif;font-size:12px;text-align:right;"><strong>% of Total</strong></td>
+        <td colspan="4" style="padding:12px 10px 6px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;color:white;letter-spacing:1px;text-transform:uppercase;">${sectionTitle}</td>
+      </tr>
+      <tr style="background:#2a2a2a;">
+        <td style="padding:8px 10px;color:white;font-family:Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;"><strong>${colLabel}</strong></td>
+        <td style="padding:8px 10px;color:white;font-family:Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;text-align:center;"><strong>Submissions</strong></td>
+        <td style="padding:8px 10px;color:white;font-family:Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;text-align:right;"><strong>Amount</strong></td>
+        <td style="padding:8px 10px;color:white;font-family:Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;text-align:right;"><strong>% of Month</strong></td>
       </tr>
       ${rows}
     </table>`;
 }
 
 function buildEmailHTML(summary, periodLabel) {
-
-  const categoryRows = summary.topCategories.map(([name, data], index) => {
-    const pct = ((data.total / summary.totalAmount) * 100).toFixed(1);
-    const isTop = index === 0;
-    return `<tr>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;${isTop ? 'font-weight:bold;color:#c0231e;' : ''}">${isTop ? '&#9650; ' : ''}${name}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:center;">${data.count}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;${isTop ? 'font-weight:bold;' : ''}">${formatMoney(data.total)}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;">${pct}%</td>
-    </tr>`;
-  }).join('');
-
-  const purposeRows = summary.topPurposes.map(([name, data], index) => {
-    const pct = ((data.total / summary.totalAmount) * 100).toFixed(1);
-    const isTop = index === 0;
-    return `<tr>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;${isTop ? 'font-weight:bold;color:#c0231e;' : ''}">${isTop ? '&#9650; ' : ''}${name}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:center;">${data.count}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;${isTop ? 'font-weight:bold;' : ''}">${formatMoney(data.total)}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;">${pct}%</td>
-    </tr>`;
-  }).join('');
-
-  const employeeRows = summary.topEmployees.map(([name, data], index) => {
-    const pct = ((data.total / summary.totalAmount) * 100).toFixed(1);
-    const isTop = index === 0;
-    return `<tr>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;${isTop ? 'font-weight:bold;color:#c0231e;' : ''}">${isTop ? '&#9650; ' : ''}${name}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:center;">${data.count}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;${isTop ? 'font-weight:bold;' : ''}">${formatMoney(data.total)}</td>
-      <td style="padding:10px;border-bottom:1px solid #eee;font-family:Arial,sans-serif;text-align:right;">${pct}%</td>
-    </tr>`;
-  }).join('');
-
   return `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#f5f5f5;">
@@ -196,19 +165,24 @@ function buildEmailHTML(summary, periodLabel) {
     </td>
   </tr>
 
-  <!-- Quick Stats -->
+  <!-- Quick Stats - 3 columns -->
   <tr>
     <td style="border-bottom:1px solid #eeeeee;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td width="50%" style="padding:16px 20px;border-right:1px solid #eeeeee;text-align:center;">
+          <td width="33%" style="padding:16px 20px;border-right:1px solid #eeeeee;text-align:center;">
             <div style="font-family:Arial,sans-serif;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:1px;">Top Category</div>
-            <div style="font-family:Arial,sans-serif;font-size:15px;font-weight:bold;color:#c0231e;margin-top:6px;">${summary.topCategory ? summary.topCategory[0] : '-'}</div>
+            <div style="font-family:Arial,sans-serif;font-size:14px;font-weight:bold;color:#c0231e;margin-top:6px;">${summary.topCategory ? summary.topCategory[0] : '-'}</div>
             <div style="font-family:Arial,sans-serif;font-size:13px;color:#444444;margin-top:3px;">${summary.topCategory ? formatMoney(summary.topCategory[1].total) : '-'}</div>
           </td>
-          <td width="50%" style="padding:16px 20px;text-align:center;">
+          <td width="33%" style="padding:16px 20px;border-right:1px solid #eeeeee;text-align:center;">
+            <div style="font-family:Arial,sans-serif;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:1px;">Top Purpose</div>
+            <div style="font-family:Arial,sans-serif;font-size:14px;font-weight:bold;color:#c0231e;margin-top:6px;">${summary.topPurpose ? summary.topPurpose[0] : '-'}</div>
+            <div style="font-family:Arial,sans-serif;font-size:13px;color:#444444;margin-top:3px;">${summary.topPurpose ? formatMoney(summary.topPurpose[1].total) : '-'}</div>
+          </td>
+          <td width="33%" style="padding:16px 20px;text-align:center;">
             <div style="font-family:Arial,sans-serif;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:1px;">Top Spender</div>
-            <div style="font-family:Arial,sans-serif;font-size:15px;font-weight:bold;color:#c0231e;margin-top:6px;">${summary.topEmployee ? summary.topEmployee[0] : '-'}</div>
+            <div style="font-family:Arial,sans-serif;font-size:14px;font-weight:bold;color:#c0231e;margin-top:6px;">${summary.topEmployee ? summary.topEmployee[0] : '-'}</div>
             <div style="font-family:Arial,sans-serif;font-size:13px;color:#444444;margin-top:3px;">${summary.topEmployee ? formatMoney(summary.topEmployee[1].total) : '-'}</div>
           </td>
         </tr>
@@ -221,16 +195,16 @@ function buildEmailHTML(summary, periodLabel) {
     <td style="padding:30px;">
 
       <!-- Top 5 Categories -->
-      ${buildSection('Top 5 Categories', categoryRows)}
+      ${buildSection('Top 5 Categories', 'Category', summary.topCategories, summary.totalAmount)}
 
       <!-- Top 5 Purpose -->
       <div style="margin-top:30px;">
-        ${buildSection('Top 5 Purpose', purposeRows)}
+        ${buildSection('Top 5 Purpose', 'Purpose', summary.topPurposes, summary.totalAmount)}
       </div>
 
       <!-- Top 5 Spenders -->
       <div style="margin-top:30px;">
-        ${buildSection('Top 5 Spenders', employeeRows)}
+        ${buildSection('Top 5 Spenders', 'Employee', summary.topEmployees, summary.totalAmount)}
       </div>
 
     </td>
