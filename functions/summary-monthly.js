@@ -39,7 +39,8 @@ export async function onRequest(context) {
 
     const summary = buildSummary(records);
     const html = buildEmailHTML(summary, periodLabel);
-    const emailResult = await sendEmail(html, periodLabel, privateKey);
+    const csvBase64 = buildCSV(records, periodLabel);
+    const emailResult = await sendEmail(html, csvBase64, periodLabel, privateKey);
 
     return new Response(`Records: ${records.length}. Email status: ${emailResult.status}. Result: ${emailResult.result}`, { status: 200 });
   } catch (err) {
@@ -98,6 +99,39 @@ function buildSummary(records) {
     topPurpose: sortedPurposes[0] || null,
     topEmployee: sortedEmployees[0] || null
   };
+}
+
+function buildCSV(records, periodLabel) {
+  const headers = ['Employee Name', 'WO# / Project', 'Purpose', 'Vendor', 'Date', 'Amount', 'Category', 'Notes', 'Submitted At'];
+  
+  const rows = records.map(r => {
+    return headers.map(h => {
+      const val = r[h] || '';
+      // Escape commas and quotes in values
+      const str = String(val);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    }).join(',');
+  });
+
+  const csv = [
+    `SLL Services - Expense Report - ${periodLabel}`,
+    '',
+    headers.join(','),
+    ...rows,
+    '',
+    `Total Records,${records.length}`,
+    `Total Amount,$${records.reduce((sum, r) => sum + (parseFloat(r['Amount']) || 0), 0).toFixed(2)}`
+  ].join('\n');
+
+  // Convert to base64
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(csv);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
 }
 
 function formatMoney(amount) {
@@ -193,20 +227,12 @@ function buildEmailHTML(summary, periodLabel) {
   <!-- Body -->
   <tr>
     <td style="padding:30px;">
-
-      <!-- Top 5 Categories -->
       ${buildSection('Top 5 Categories', 'Category', summary.topCategories, summary.totalAmount)}
-
-      <!-- Top 5 Purpose -->
-      <div style="margin-top:30px;">
-        ${buildSection('Top 5 Purpose', 'Purpose', summary.topPurposes, summary.totalAmount)}
+      <div style="margin-top:30px;">${buildSection('Top 5 Purpose', 'Purpose', summary.topPurposes, summary.totalAmount)}</div>
+      <div style="margin-top:30px;">${buildSection('Top 5 Spenders', 'Employee', summary.topEmployees, summary.totalAmount)}</div>
+      <div style="margin-top:20px;padding:12px;background:#f5f5f5;border-radius:4px;text-align:center;">
+        <div style="font-family:Arial,sans-serif;font-size:12px;color:#888888;">&#128206; Full expense list attached as CSV</div>
       </div>
-
-      <!-- Top 5 Spenders -->
-      <div style="margin-top:30px;">
-        ${buildSection('Top 5 Spenders', 'Employee', summary.topEmployees, summary.totalAmount)}
-      </div>
-
     </td>
   </tr>
 
@@ -229,7 +255,7 @@ function buildEmailHTML(summary, periodLabel) {
 </html>`;
 }
 
-async function sendEmail(html, periodLabel, privateKey) {
+async function sendEmail(html, csvBase64, periodLabel, privateKey) {
   const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -241,7 +267,8 @@ async function sendEmail(html, periodLabel, privateKey) {
       template_params: {
         from_name: 'SLL Expense Portal',
         subject: `Monthly Expense Summary - SLL Services - ${periodLabel}`,
-        message: html
+        message: html,
+        expense_list: csvBase64
       }
     })
   });
